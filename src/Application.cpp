@@ -5,6 +5,8 @@
 namespace nadpher
 {
 
+bool Application::isPanning_ = false;
+sf::Vector2i Application::cachedMousePosition_;
 sf::RenderWindow Application::window_;
 sf::View Application::view_;
 Map Application::map_;
@@ -64,10 +66,21 @@ void Application::handleEvents()
 			break;
 
 		case sf::Event::MouseButtonPressed:
-			if (event.mouseButton.button == sf::Mouse::Button::Left)
+			buttonPressEvent(event);
+			break;
+
+		case sf::Event::MouseButtonReleased:
+			if (event.mouseButton.button == sf::Mouse::Button::Middle)
 			{
-				sf::Vector2i pixelPosition = sf::Mouse::getPosition(window_);
-				map_.placeTile(window_.mapPixelToCoords(pixelPosition, view_));
+				isPanning_ = false;
+			}
+			break;
+
+		case sf::Event::MouseMoved:
+			if (isPanning_)
+			{
+				view_.move(event.mouseMove.x - cachedMousePosition_.x,
+						   event.mouseMove.y + cachedMousePosition_.y);
 			}
 			break;
 
@@ -78,6 +91,21 @@ void Application::handleEvents()
 		default:
 			break;
 		}
+	}
+}
+
+void Application::buttonPressEvent(const sf::Event& event)
+{
+	sf::Vector2i pixelPosition = sf::Mouse::getPosition(window_);
+	sf::Vector2f mousePosition = window_.mapPixelToCoords(pixelPosition, view_);
+	if (event.mouseButton.button == sf::Mouse::Button::Left)
+	{
+		map_.placeTile(mousePosition);
+	}
+	else if (event.mouseButton.button == sf::Mouse::Button::Middle)
+	{
+		isPanning_ = true;
+		cachedMousePosition_ = pixelPosition;
 	}
 }
 
