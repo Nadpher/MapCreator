@@ -79,8 +79,10 @@ void Application::handleEvents()
 		case sf::Event::MouseMoved:
 			if (isPanning_)
 			{
-				view_.move(event.mouseMove.x - cachedMousePosition_.x,
-						   event.mouseMove.y + cachedMousePosition_.y);
+				view_.move(cachedMousePosition_.x - event.mouseMove.x,
+						   cachedMousePosition_.y - event.mouseMove.y);
+
+				cachedMousePosition_ = sf::Mouse::getPosition(window_);
 			}
 			break;
 
