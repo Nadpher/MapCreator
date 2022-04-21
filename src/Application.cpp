@@ -6,6 +6,7 @@ namespace nadpher
 {
 
 bool Application::isPanning_ = false;
+float Application::zoomLevel_ = 1.0f;
 sf::Vector2i Application::cachedMousePosition_;
 sf::RenderWindow Application::window_;
 sf::View Application::view_;
@@ -79,8 +80,8 @@ void Application::handleEvents()
 		case sf::Event::MouseMoved:
 			if (isPanning_)
 			{
-				view_.move(cachedMousePosition_.x - event.mouseMove.x,
-						   cachedMousePosition_.y - event.mouseMove.y);
+				view_.move((cachedMousePosition_.x - event.mouseMove.x) * zoomLevel_,
+						   (cachedMousePosition_.y - event.mouseMove.y) * zoomLevel_);
 
 				cachedMousePosition_ = sf::Mouse::getPosition(window_);
 			}
@@ -120,11 +121,13 @@ void Application::zoomEvent(const sf::Event& event)
 	if (event.mouseWheelScroll.delta > 0)
 	{
 		view_.zoom(half);
+		zoomLevel_ *= half;
 	}
 	// scroll down
 	else
 	{
 		view_.zoom(timesTwo);
+		zoomLevel_ *= timesTwo;
 	}
 }
 
