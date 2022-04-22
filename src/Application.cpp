@@ -1,5 +1,6 @@
 #include "Application.h"
 
+#include <imgui.h>
 #include <imgui-SFML.h>
 
 namespace nadpher
@@ -41,6 +42,8 @@ void Application::run()
 
 		ImGui::SFML::Update(window_, elapsed);
 
+		drawGUI();
+
 		window_.setView(view_);
 		window_.clear();
 
@@ -51,6 +54,26 @@ void Application::run()
 	}
 
 	ImGui::SFML::Shutdown();
+}
+
+void Application::drawGUI()
+{
+	if (ImGui::BeginMainMenuBar())
+	{
+		if (ImGui::BeginMenu("File"))
+		{
+			if (ImGui::MenuItem("Open", "F2"))
+			{
+				spdlog::debug("Opened new file");
+			}
+
+
+			ImGui::EndMenu();
+		}
+
+		ImGui::EndMainMenuBar();
+	}
+
 }
 
 void Application::handleEvents()
@@ -97,8 +120,13 @@ void Application::handleEvents()
 	}
 }
 
-void Application::buttonPressEvent(const sf::Event& event)
+void Application::buttonPressEvent(const sf::Event& event)	
 {
+	if (ImGui::GetIO().WantCaptureMouse)
+	{
+		return;
+	}
+
 	sf::Vector2i pixelPosition = sf::Mouse::getPosition(window_);
 	sf::Vector2f mousePosition = window_.mapPixelToCoords(pixelPosition, view_);
 	if (event.mouseButton.button == sf::Mouse::Button::Left)
