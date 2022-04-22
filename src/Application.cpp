@@ -70,18 +70,50 @@ void Application::drawGrid()
 	int yTiles = windowSize.y / tileSize;
 
 	sf::VertexArray arr(sf::LinesStrip, 2);
+	sf::Vector2f topLeft = view_.getCenter() - view_.getSize() / 2.0f;
 
-	for (int i = 1; i < xTiles; ++i)
+	while (std::abs(topLeft.x) > tileSize)
+	{
+		if (topLeft.x > 0.0f)
+		{
+			topLeft.x -= tileSize;
+		}
+		else
+		{
+			topLeft.x += tileSize;
+		}
+	}
+
+	while (std::abs(topLeft.y) > tileSize)
+	{
+		if (topLeft.y > 0.0f)
+		{
+			topLeft.y -= tileSize;
+		}
+		else
+		{
+			topLeft.y += tileSize;
+		}
+	}
+
+	for (int i = 0; i < xTiles; ++i)
 	{
 		arr[0].position = window_.mapPixelToCoords({ i * tileSize, 0 });
+		arr[0].position.x -= topLeft.x;
+
 		arr[1].position = window_.mapPixelToCoords({ i * tileSize, (int)windowSize.y });
+		arr[1].position.x -= topLeft.x;
+
 		window_.draw(arr);
 	}
 
-	for (int i = 1; i < yTiles; ++i)
+	for (int i = 0; i < yTiles; ++i)
 	{
 		arr[0].position = window_.mapPixelToCoords({ 0, i * tileSize });
+		arr[0].position.y -= topLeft.y;
+
 		arr[1].position = window_.mapPixelToCoords({ (int)windowSize.x, i * tileSize });
+		arr[1].position.y -= topLeft.y;
 		window_.draw(arr);
 	}
 }
