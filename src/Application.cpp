@@ -7,6 +7,7 @@ namespace nadpher
 {
 
 bool Application::isPanning_ = false;
+bool Application::isDrawGrid_ = false;
 float Application::zoomLevel_ = 1.0f;
 sf::Vector2i Application::cachedMousePosition_;
 sf::RenderWindow Application::window_;
@@ -41,19 +42,48 @@ void Application::run()
 		handleEvents();
 
 		ImGui::SFML::Update(window_, elapsed);
-
 		drawGUI();
 
 		window_.setView(view_);
 		window_.clear();
 
 		window_.draw(map_);
+		if (isDrawGrid_)
+		{
+			drawGrid();
+		}
 		ImGui::SFML::Render(window_);
 
 		window_.display();
 	}
 
 	ImGui::SFML::Shutdown();
+}
+
+void Application::drawGrid()
+{
+	// 64 is the px size of the test tile
+	// needs to be able to be set from gui
+	int tileSize = 64 / zoomLevel_;
+	sf::Vector2u windowSize = window_.getSize();
+	int xTiles = windowSize.x / tileSize;
+	int yTiles = windowSize.y / tileSize;
+
+	sf::VertexArray arr(sf::LinesStrip, 2);
+
+	for (int i = 1; i < xTiles; ++i)
+	{
+		arr[0].position = window_.mapPixelToCoords({ i * tileSize, 0 });
+		arr[1].position = window_.mapPixelToCoords({ i * tileSize, (int)windowSize.y });
+		window_.draw(arr);
+	}
+
+	for (int i = 1; i < yTiles; ++i)
+	{
+		arr[0].position = window_.mapPixelToCoords({ 0, i * tileSize });
+		arr[1].position = window_.mapPixelToCoords({ (int)windowSize.x, i * tileSize });
+		window_.draw(arr);
+	}
 }
 
 void Application::drawGUI()
@@ -72,6 +102,13 @@ void Application::drawGUI()
 		}
 
 		ImGui::EndMainMenuBar();
+	}
+
+	if (ImGui::Begin("Options"))
+	{
+		ImGui::Checkbox("Show grid", &isDrawGrid_);
+
+		ImGui::End();
 	}
 
 }
@@ -143,7 +180,7 @@ void Application::buttonPressEvent(const sf::Event& event)
 void Application::zoomEvent(const sf::Event& event)
 {
 	constexpr float timesTwo = 2.0f;
-	constexpr  float half = 0.5f;
+	constexpr float half = 0.5f;
 
 	// scroll up
 	if (event.mouseWheelScroll.delta > 0)

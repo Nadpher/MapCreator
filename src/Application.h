@@ -19,10 +19,12 @@ private:
 
 	static void handleEvents();
 	static void drawGUI();
+	static void drawGrid();
 	static void zoomEvent(const sf::Event& event);
 	static void buttonPressEvent(const sf::Event& event);
 
 	static bool isPanning_;
+	static bool isDrawGrid_;
 	static float zoomLevel_;
 	static sf::Vector2i cachedMousePosition_;
 	static sf::RenderWindow window_;
