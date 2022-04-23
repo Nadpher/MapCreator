@@ -7,7 +7,6 @@ namespace nadpher
 {
 
 bool Application::isPanning_ = false;
-bool Application::isDrawGrid_ = false;
 float Application::zoomLevel_ = 1.0f;
 sf::Vector2i Application::cachedMousePosition_;
 sf::RenderWindow Application::window_;
@@ -44,14 +43,11 @@ void Application::run()
 		ImGui::SFML::Update(window_, elapsed);
 		drawGUI();
 
-		window_.setView(view_);
+		
 		window_.clear();
 
 		window_.draw(map_);
-		if (isDrawGrid_)
-		{
-			drawGrid();
-		}
+		drawGrid();
 		ImGui::SFML::Render(window_);
 
 		window_.display();
@@ -62,60 +58,42 @@ void Application::run()
 
 void Application::drawGrid()
 {
-	// 64 is the px size of the test tile
-	// needs to be able to be set from gui
-	int tileSize = 64 / zoomLevel_;
-	sf::Vector2u windowSize = window_.getSize();
-	int xTiles = windowSize.x / tileSize;
-	int yTiles = windowSize.y / tileSize;
-
 	sf::VertexArray arr(sf::LinesStrip, 2);
-	sf::Vector2f topLeft = view_.getCenter() - view_.getSize() / 2.0f;
+	sf::Vector2i center = sf::Vector2i(view_.getCenter());
+	sf::Vector2u windowSize = window_.getSize();
 
-	while (std::abs(topLeft.x) > tileSize)
+	constexpr int tileSize = 64;
+	const int scaledTileSize = tileSize / zoomLevel_;
+
+	unsigned int xTiles =  windowSize.x / scaledTileSize;
+	unsigned int yTiles = windowSize.y / scaledTileSize;
+
+	// temporary grey color
+	arr[0].color = sf::Color(150, 150, 150, 255);
+	arr[1].color = sf::Color(150, 150, 150, 255);
+
+	// columns
+	for (int i = 0; i <= xTiles; ++i)
 	{
-		if (topLeft.x > 0.0f)
-		{
-			topLeft.x -= tileSize;
-		}
-		else
-		{
-			topLeft.x += tileSize;
-		}
-	}
+		arr[0].position = window_.mapPixelToCoords(sf::Vector2i(i * scaledTileSize, 0));
+		arr[0].position.x -= center.x % tileSize;
 
-	while (std::abs(topLeft.y) > tileSize)
-	{
-		if (topLeft.y > 0.0f)
-		{
-			topLeft.y -= tileSize;
-		}
-		else
-		{
-			topLeft.y += tileSize;
-		}
-	}
-
-	for (int i = 0; i < xTiles; ++i)
-	{
-		arr[0].position = window_.mapPixelToCoords({ i * tileSize, 0 });
-		arr[0].position.x -= topLeft.x;
-
-		arr[1].position = window_.mapPixelToCoords({ i * tileSize, (int)windowSize.y });
-		arr[1].position.x -= topLeft.x;
-
+		arr[1].position = window_.mapPixelToCoords(sf::Vector2i(i * scaledTileSize, windowSize.y));
+		arr[1].position.x -= center.x % tileSize;
 		window_.draw(arr);
 	}
 
-	for (int i = 0; i < yTiles; ++i)
+	// rows
+	for (int i = 0; i <= yTiles; ++i)
 	{
-		arr[0].position = window_.mapPixelToCoords({ 0, i * tileSize });
-		arr[0].position.y -= topLeft.y;
+		arr[0].position = window_.mapPixelToCoords(sf::Vector2i(0, i * scaledTileSize));
+		arr[0].position.y -= center.y % tileSize;
 
-		arr[1].position = window_.mapPixelToCoords({ (int)windowSize.x, i * tileSize });
-		arr[1].position.y -= topLeft.y;
+		arr[1].position = window_.mapPixelToCoords(sf::Vector2i(windowSize.x, i * scaledTileSize));
+		arr[1].position.y -= center.y % tileSize;
 		window_.draw(arr);
 	}
+
 }
 
 void Application::drawGUI()
@@ -138,8 +116,6 @@ void Application::drawGUI()
 
 	if (ImGui::Begin("Options"))
 	{
-		ImGui::Checkbox("Show grid", &isDrawGrid_);
-
 		ImGui::End();
 	}
 
@@ -176,6 +152,7 @@ void Application::handleEvents()
 						   (cachedMousePosition_.y - event.mouseMove.y) * zoomLevel_);
 
 				cachedMousePosition_ = sf::Mouse::getPosition(window_);
+				window_.setView(view_);
 			}
 			break;
 
@@ -197,26 +174,18 @@ void Application::buttonPressEvent(const sf::Event& event)
 	}
 
 	sf::Vector2i pixelPosition = sf::Mouse::getPosition(window_);
-	sf::Vector2f mousePosition = window_.mapPixelToCoords(pixelPosition, view_);
+	sf::Vector2f mapPosition = window_.mapPixelToCoords(pixelPosition, view_);
 	if (event.mouseButton.button == sf::Mouse::Button::Left)
 	{
 		// snap to grid
-		if (isDrawGrid_)
-		{
-			sf::Vector2i converted(mousePosition);
-			// 64 is the size of the test texture
-			constexpr int tileSize = 64;
-			const int scaledTileSize = tileSize / zoomLevel_;
+		sf::Vector2i converted(mapPosition);
 
-			// have to use tilesize / 2 since texture origin is centered
-			converted.x -= (converted.x % tileSize) - tileSize / 2;
-			converted.y -= (converted.y % tileSize) - tileSize / 2;
-			map_.placeTile(sf::Vector2f(converted));
-		}
-		else
-		{
-			map_.placeTile(sf::Vector2f(mousePosition));
-		}
+		// 64 is the size of the test texture
+		constexpr int tileSize = 64;
+
+		converted.x -= (converted.x % tileSize);
+		converted.y -= (converted.y % tileSize);
+		map_.placeTile(sf::Vector2f(converted));
 
 	}
 	else if (event.mouseButton.button == sf::Mouse::Button::Middle)
@@ -243,6 +212,7 @@ void Application::zoomEvent(const sf::Event& event)
 		view_.zoom(timesTwo);
 		zoomLevel_ *= timesTwo;
 	}
+	window_.setView(view_);
 }
 
 

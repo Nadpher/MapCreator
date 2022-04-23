@@ -9,9 +9,6 @@ Tile::Tile(const std::string& texturePath, const sf::Vector2f& position)
 {
 	sprite_.setTexture(*ResourceManager<sf::Texture>::get(texturePath));
 	sprite_.setPosition(position);
-
-	auto textureRect = sprite_.getTextureRect();
-	sprite_.setOrigin({ textureRect.width / 2.0f, textureRect.height / 2.0f });
 }
 
 void Tile::draw(sf::RenderTarget& target, sf::RenderStates states) const

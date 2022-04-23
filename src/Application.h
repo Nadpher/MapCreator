@@ -24,7 +24,6 @@ private:
 	static void buttonPressEvent(const sf::Event& event);
 
 	static bool isPanning_;
-	static bool isDrawGrid_;
 	static float zoomLevel_;
 	static sf::Vector2i cachedMousePosition_;
 	static sf::RenderWindow window_;
