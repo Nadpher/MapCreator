@@ -200,7 +200,23 @@ void Application::buttonPressEvent(const sf::Event& event)
 	sf::Vector2f mousePosition = window_.mapPixelToCoords(pixelPosition, view_);
 	if (event.mouseButton.button == sf::Mouse::Button::Left)
 	{
-		map_.placeTile(mousePosition);
+		// snap to grid
+		if (isDrawGrid_)
+		{
+			sf::Vector2i converted(mousePosition);
+			// 64 is the size of the test texture
+			const int tileSize = 64 * zoomLevel_;
+
+			// have to use tilesize / 2 since texture origin is centered
+			converted.x -= (converted.x % tileSize) - tileSize / 2;
+			converted.y -= (converted.y % tileSize) - tileSize / 2;
+			map_.placeTile(sf::Vector2f(converted));
+		}
+		else
+		{
+			map_.placeTile(sf::Vector2f(mousePosition));
+		}
+
 	}
 	else if (event.mouseButton.button == sf::Mouse::Button::Middle)
 	{
