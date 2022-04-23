@@ -205,7 +205,8 @@ void Application::buttonPressEvent(const sf::Event& event)
 		{
 			sf::Vector2i converted(mousePosition);
 			// 64 is the size of the test texture
-			const int tileSize = 64 * zoomLevel_;
+			constexpr int tileSize = 64;
+			const int scaledTileSize = tileSize / zoomLevel_;
 
 			// have to use tilesize / 2 since texture origin is centered
 			converted.x -= (converted.x % tileSize) - tileSize / 2;
