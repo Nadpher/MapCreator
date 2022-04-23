@@ -48,12 +48,33 @@ void Application::run()
 
 		window_.draw(map_);
 		drawGrid();
+		drawHoveredCell();
 		ImGui::SFML::Render(window_);
 
 		window_.display();
 	}
 
 	ImGui::SFML::Shutdown();
+}
+
+void Application::drawHoveredCell()
+{
+	// temporary
+	constexpr int tileSize = 64;
+
+	sf::RectangleShape cell(sf::Vector2f(tileSize, tileSize));
+	cell.setFillColor(sf::Color::Transparent);
+	cell.setOutlineColor(sf::Color::Red);
+	cell.setOutlineThickness(2.0f);
+
+	sf::Vector2f mousePosition = window_.mapPixelToCoords(sf::Mouse::getPosition(window_), view_);
+
+	mousePosition.x -= std::fmodf(mousePosition.x, tileSize);
+	mousePosition.y -= std::fmodf(mousePosition.y, tileSize);
+
+	cell.setPosition(mousePosition);
+
+	window_.draw(cell);
 }
 
 void Application::drawGrid()

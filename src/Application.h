@@ -18,6 +18,7 @@ public:
 private:
 
 	static void handleEvents();
+	static void drawHoveredCell();
 	static void drawGUI();
 	static void drawGrid();
 	static void zoomEvent(const sf::Event& event);
