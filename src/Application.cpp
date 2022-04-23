@@ -59,7 +59,7 @@ void Application::run()
 void Application::drawGrid()
 {
 	sf::VertexArray arr(sf::LinesStrip, 2);
-	sf::Vector2i center = sf::Vector2i(view_.getCenter());
+	sf::Vector2f center = view_.getCenter();
 	sf::Vector2u windowSize = window_.getSize();
 
 	constexpr int tileSize = 64;
@@ -73,24 +73,26 @@ void Application::drawGrid()
 	arr[1].color = sf::Color(150, 150, 150, 255);
 
 	// columns
+	float offset = fmodf(center.x, tileSize);
 	for (int i = 0; i <= xTiles; ++i)
 	{
-		arr[0].position = window_.mapPixelToCoords(sf::Vector2i(i * scaledTileSize, 0));
-		arr[0].position.x -= center.x % tileSize;
+		arr[0].position = window_.mapPixelToCoords(sf::Vector2i(i * scaledTileSize, 0), view_);
+		arr[0].position.x -= offset;
 
-		arr[1].position = window_.mapPixelToCoords(sf::Vector2i(i * scaledTileSize, windowSize.y));
-		arr[1].position.x -= center.x % tileSize;
+		arr[1].position = window_.mapPixelToCoords(sf::Vector2i(i * scaledTileSize, windowSize.y), view_);
+		arr[1].position.x -= offset;
 		window_.draw(arr);
 	}
 
 	// rows
+	offset = fmodf(center.y, tileSize);
 	for (int i = 0; i <= yTiles; ++i)
 	{
-		arr[0].position = window_.mapPixelToCoords(sf::Vector2i(0, i * scaledTileSize));
-		arr[0].position.y -= center.y % tileSize;
+		arr[0].position = window_.mapPixelToCoords(sf::Vector2i(0, i * scaledTileSize), view_);
+		arr[0].position.y -= offset;
 
-		arr[1].position = window_.mapPixelToCoords(sf::Vector2i(windowSize.x, i * scaledTileSize));
-		arr[1].position.y -= center.y % tileSize;
+		arr[1].position = window_.mapPixelToCoords(sf::Vector2i(windowSize.x, i * scaledTileSize), view_);
+		arr[1].position.y -= offset;
 		window_.draw(arr);
 	}
 
@@ -114,10 +116,9 @@ void Application::drawGUI()
 		ImGui::EndMainMenuBar();
 	}
 
-	if (ImGui::Begin("Options"))
-	{
-		ImGui::End();
-	}
+	ImGui::Begin("Options");
+	
+	ImGui::End();
 
 }
 
@@ -183,8 +184,8 @@ void Application::buttonPressEvent(const sf::Event& event)
 		// 64 is the size of the test texture
 		constexpr int tileSize = 64;
 
-		converted.x -= (converted.x % tileSize);
-		converted.y -= (converted.y % tileSize);
+		converted.x -= converted.x % tileSize;
+		converted.y -= converted.y % tileSize;
 		map_.placeTile(sf::Vector2f(converted));
 
 	}
