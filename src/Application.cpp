@@ -156,13 +156,14 @@ void Application::drawGUI()
 				ImGui::TableNextColumn();
 				sprite.setTextureRect(sf::IntRect(sf::Vector2i(j * tileSize.x, i * tileSize.y), sf::Vector2i(tileSize)));
 
-				if (ImGui::ImageButton(sprite, 0))
+				ImGui::PushID(i * tiles.x + j);
+				if (ImGui::ImageButton(sprite))
 				{
 					selectedTile_ = sf::Vector2u(j * tileSize.x, i * tileSize.y);
 				}
+				ImGui::PopID();
 			}
 		}
-
 
 		ImGui::EndTable();
 	}
