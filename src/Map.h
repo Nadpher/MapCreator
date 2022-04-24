@@ -2,8 +2,9 @@
 
 #include "pch.h"
 #include "Tile.h"
+#include "Coord.h"
 
-#include <vector>
+#include <map>
 
 namespace nadpher
 {
@@ -22,7 +23,7 @@ public:
 private:
 
 	sf::Vector2u tileSize_;
-	std::vector<Tile> tiles_;
+	std::map<Coord, Tile> tiles_;
 };
 
 }

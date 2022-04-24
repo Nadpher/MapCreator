@@ -146,6 +146,7 @@
     <ClCompile Include="src\Tile.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Coord.h" />
     <ClInclude Include="src\ResourceManager.h" />
     <ClInclude Include="src\Map.h" />
     <ClInclude Include="src\Application.h" />

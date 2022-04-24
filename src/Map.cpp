@@ -17,9 +17,9 @@ Map::Map(const sf::Vector2u& tileSize)
 
 void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-	for (const Tile& tile : tiles_)
+	for (auto it = tiles_.begin(); it != tiles_.end(); ++it)
 	{
-		target.draw(tile, states);
+		target.draw(it->second);
 	}
 }
 
@@ -31,7 +31,10 @@ void Map::placeTile(const std::string& texturePath, const sf::Vector2u& textureP
 		return;
 	}
 
-	tiles_.push_back({ texturePath, sf::IntRect(sf::Vector2i(texturePosition), sf::Vector2i(tileSize_)), position });
+	// i hate warnings
+	Coord index = { static_cast<int>(position.x) / static_cast<int>(tileSize_.x),
+				    static_cast<int>(position.y) / static_cast<int>(tileSize_.y) };
+	tiles_[index] = Tile(texturePath, sf::IntRect(sf::Vector2i(texturePosition), sf::Vector2i(tileSize_)), position);
 }
 
 }
