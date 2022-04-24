@@ -24,6 +24,8 @@ private:
 	static void zoomEvent(const sf::Event& event);
 	static void buttonPressEvent(const sf::Event& event);
 
+	static std::string tilesheet_;
+	static sf::Vector2u selectedTile_;
 	static bool isPanning_;
 	static float zoomLevel_;
 	static sf::Vector2i cachedMousePosition_;

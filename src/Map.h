@@ -16,7 +16,7 @@ public:
 
 	sf::Vector2u getTileSize() const { return tileSize_; }
 
-	void placeTile(const sf::Vector2f& position);
+	void placeTile(const std::string& texturePath, const sf::Vector2u& texturePosition, const sf::Vector2f& position);
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 private:

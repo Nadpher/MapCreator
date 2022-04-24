@@ -1,4 +1,5 @@
 #include "Application.h"
+#include "ResourceManager.h"
 
 #include <imgui.h>
 #include <imgui-SFML.h>
@@ -8,6 +9,8 @@ namespace nadpher
 
 bool Application::isPanning_ = false;
 float Application::zoomLevel_ = 1.0f;
+std::string Application::tilesheet_ = "res/tilesheet1.png";
+sf::Vector2u Application::selectedTile_;
 sf::Vector2i Application::cachedMousePosition_;
 sf::RenderWindow Application::window_;
 sf::View Application::view_;
@@ -86,15 +89,15 @@ void Application::drawGrid()
 	const int xScaledTileSize = tileSize.x / zoomLevel_;
 	const int yScaledTileSize = tileSize.y / zoomLevel_;
 
-	unsigned int xTiles =  windowSize.x / xScaledTileSize;
-	unsigned int yTiles = windowSize.y / yScaledTileSize;
+	int xTiles = windowSize.x / xScaledTileSize;
+	int yTiles = windowSize.y / yScaledTileSize;
 
 	// temporary grey color
 	arr[0].color = sf::Color(150, 150, 150, 255);
 	arr[1].color = sf::Color(150, 150, 150, 255);
 
 	// columns
-	float offset = fmodf(center.x, tileSize.x);
+	float offset = fmodf(center.x, static_cast<float>(tileSize.x));
 	for (int i = 0; i <= xTiles; ++i)
 	{
 		arr[0].position = window_.mapPixelToCoords(sf::Vector2i(i * xScaledTileSize, 0), view_);
@@ -106,7 +109,7 @@ void Application::drawGrid()
 	}
 
 	// rows
-	offset = fmodf(center.y, tileSize.y);
+	offset = fmodf(center.y, static_cast<float>(tileSize.y));
 	for (int i = 0; i <= yTiles; ++i)
 	{
 		arr[0].position = window_.mapPixelToCoords(sf::Vector2i(0, i * yScaledTileSize), view_);
@@ -137,8 +140,34 @@ void Application::drawGUI()
 		ImGui::EndMainMenuBar();
 	}
 
-	ImGui::Begin("Options");
-	
+	ImGui::Begin("Tiles");
+	const sf::Vector2u textureSize = (*ResourceManager<sf::Texture>::get(tilesheet_)).getSize();
+	const sf::Vector2u tileSize = map_.getTileSize();
+	sf::Vector2u tiles = sf::Vector2u(textureSize.x / tileSize.x, textureSize.y / tileSize.y);
+	if (ImGui::BeginTable("tiles", tiles.x))
+	{
+		sf::Sprite sprite;
+		sprite.setTexture(*ResourceManager<sf::Texture>::get(tilesheet_));
+		for (int i = 0; i < tiles.y; ++i)
+		{
+			ImGui::TableNextRow();
+			for (int j = 0; j < tiles.x; ++j)
+			{
+				ImGui::TableNextColumn();
+				sprite.setTextureRect(sf::IntRect(sf::Vector2i(j * tileSize.x, i * tileSize.y), sf::Vector2i(tileSize)));
+
+				if (ImGui::ImageButton(sprite, 0))
+				{
+					selectedTile_ = sf::Vector2u(j * tileSize.x, i * tileSize.y);
+				}
+			}
+		}
+
+
+		ImGui::EndTable();
+	}
+
+
 	ImGui::End();
 
 }
@@ -201,9 +230,9 @@ void Application::buttonPressEvent(const sf::Event& event)
 	{
 		sf::Vector2u tileSize = map_.getTileSize();
 
-		mousePosition.x -= std::fmodf(mousePosition.x, tileSize.x);
-		mousePosition.y -= std::fmodf(mousePosition.y, tileSize.y);
-		map_.placeTile(mousePosition);
+		mousePosition.x -= std::fmodf(mousePosition.x, static_cast<float>(tileSize.x));
+		mousePosition.y -= std::fmodf(mousePosition.y, static_cast<float>(tileSize.y));
+		map_.placeTile(tilesheet_, selectedTile_, mousePosition);
 	}
 	else if (event.mouseButton.button == sf::Mouse::Button::Middle)
 	{
@@ -214,6 +243,11 @@ void Application::buttonPressEvent(const sf::Event& event)
 
 void Application::zoomEvent(const sf::Event& event)
 {
+	if (ImGui::GetIO().WantCaptureMouse)
+	{
+		return;
+	}
+
 	constexpr float timesTwo = 2.0f;
 	constexpr float half = 0.5f;
 

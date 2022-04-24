@@ -23,9 +23,15 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	}
 }
 
-void Map::placeTile(const sf::Vector2f& position)
+void Map::placeTile(const std::string& texturePath, const sf::Vector2u& texturePosition, const sf::Vector2f& position)
 {
-	tiles_.push_back({ "res/tile1.png", position });
+	if (texturePath.empty())
+	{
+		spdlog::info("No tilesheet selected");
+		return;
+	}
+
+	tiles_.push_back({ texturePath, sf::IntRect(sf::Vector2i(texturePosition), sf::Vector2i(tileSize_)), position });
 }
 
 }
