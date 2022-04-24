@@ -11,7 +11,7 @@ float Application::zoomLevel_ = 1.0f;
 sf::Vector2i Application::cachedMousePosition_;
 sf::RenderWindow Application::window_;
 sf::View Application::view_;
-Map Application::map_;
+Map Application::map_(64, 64); // temporary
 
 int Application::init(unsigned int width, unsigned int height, const std::string& title)
 {
@@ -59,18 +59,17 @@ void Application::run()
 
 void Application::drawHoveredCell()
 {
-	// temporary
-	constexpr int tileSize = 64;
+	sf::Vector2u tileSize = map_.getTileSize();
 
-	sf::RectangleShape cell(sf::Vector2f(tileSize, tileSize));
+	sf::RectangleShape cell(sf::Vector2f(tileSize.x, tileSize.y));
 	cell.setFillColor(sf::Color::Transparent);
 	cell.setOutlineColor(sf::Color::Red);
 	cell.setOutlineThickness(2.0f);
 
 	sf::Vector2f mousePosition = window_.mapPixelToCoords(sf::Mouse::getPosition(window_), view_);
 
-	mousePosition.x -= std::fmodf(mousePosition.x, tileSize);
-	mousePosition.y -= std::fmodf(mousePosition.y, tileSize);
+	mousePosition.x -= std::fmodf(mousePosition.x, tileSize.x);
+	mousePosition.y -= std::fmodf(mousePosition.y, tileSize.y);
 
 	cell.setPosition(mousePosition);
 
@@ -83,36 +82,37 @@ void Application::drawGrid()
 	sf::Vector2f center = view_.getCenter();
 	sf::Vector2u windowSize = window_.getSize();
 
-	constexpr int tileSize = 64;
-	const int scaledTileSize = tileSize / zoomLevel_;
+	sf::Vector2u tileSize = map_.getTileSize();
+	const int xScaledTileSize = tileSize.x / zoomLevel_;
+	const int yScaledTileSize = tileSize.y / zoomLevel_;
 
-	unsigned int xTiles =  windowSize.x / scaledTileSize;
-	unsigned int yTiles = windowSize.y / scaledTileSize;
+	unsigned int xTiles =  windowSize.x / xScaledTileSize;
+	unsigned int yTiles = windowSize.y / yScaledTileSize;
 
 	// temporary grey color
 	arr[0].color = sf::Color(150, 150, 150, 255);
 	arr[1].color = sf::Color(150, 150, 150, 255);
 
 	// columns
-	float offset = fmodf(center.x, tileSize);
+	float offset = fmodf(center.x, tileSize.x);
 	for (int i = 0; i <= xTiles; ++i)
 	{
-		arr[0].position = window_.mapPixelToCoords(sf::Vector2i(i * scaledTileSize, 0), view_);
+		arr[0].position = window_.mapPixelToCoords(sf::Vector2i(i * xScaledTileSize, 0), view_);
 		arr[0].position.x -= offset;
 
-		arr[1].position = window_.mapPixelToCoords(sf::Vector2i(i * scaledTileSize, windowSize.y), view_);
+		arr[1].position = window_.mapPixelToCoords(sf::Vector2i(i * xScaledTileSize, windowSize.y), view_);
 		arr[1].position.x -= offset;
 		window_.draw(arr);
 	}
 
 	// rows
-	offset = fmodf(center.y, tileSize);
+	offset = fmodf(center.y, tileSize.y);
 	for (int i = 0; i <= yTiles; ++i)
 	{
-		arr[0].position = window_.mapPixelToCoords(sf::Vector2i(0, i * scaledTileSize), view_);
+		arr[0].position = window_.mapPixelToCoords(sf::Vector2i(0, i * yScaledTileSize), view_);
 		arr[0].position.y -= offset;
 
-		arr[1].position = window_.mapPixelToCoords(sf::Vector2i(windowSize.x, i * scaledTileSize), view_);
+		arr[1].position = window_.mapPixelToCoords(sf::Vector2i(windowSize.x, i * yScaledTileSize), view_);
 		arr[1].position.y -= offset;
 		window_.draw(arr);
 	}
@@ -196,19 +196,14 @@ void Application::buttonPressEvent(const sf::Event& event)
 	}
 
 	sf::Vector2i pixelPosition = sf::Mouse::getPosition(window_);
-	sf::Vector2f mapPosition = window_.mapPixelToCoords(pixelPosition, view_);
+	sf::Vector2f mousePosition = window_.mapPixelToCoords(pixelPosition, view_);
 	if (event.mouseButton.button == sf::Mouse::Button::Left)
 	{
-		// snap to grid
-		sf::Vector2i converted(mapPosition);
+		sf::Vector2u tileSize = map_.getTileSize();
 
-		// 64 is the size of the test texture
-		constexpr int tileSize = 64;
-
-		converted.x -= converted.x % tileSize;
-		converted.y -= converted.y % tileSize;
-		map_.placeTile(sf::Vector2f(converted));
-
+		mousePosition.x -= std::fmodf(mousePosition.x, tileSize.x);
+		mousePosition.y -= std::fmodf(mousePosition.y, tileSize.y);
+		map_.placeTile(mousePosition);
 	}
 	else if (event.mouseButton.button == sf::Mouse::Button::Middle)
 	{
