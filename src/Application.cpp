@@ -44,8 +44,8 @@ void Application::run()
 		handleEvents();
 
 		ImGui::SFML::Update(window_, elapsed);
-		drawGUI();
 
+		drawGUI();
 		
 		window_.clear();
 
@@ -64,15 +64,16 @@ void Application::drawHoveredCell()
 {
 	sf::Vector2u tileSize = map_.getTileSize();
 
-	sf::RectangleShape cell(sf::Vector2f(tileSize.x, tileSize.y));
+	sf::RectangleShape cell(sf::Vector2f(static_cast<float>(tileSize.x),
+										 static_cast<float>(tileSize.y)));
 	cell.setFillColor(sf::Color::Transparent);
 	cell.setOutlineColor(sf::Color::Red);
 	cell.setOutlineThickness(2.0f);
 
 	sf::Vector2f mousePosition = window_.mapPixelToCoords(sf::Mouse::getPosition(window_), view_);
 
-	mousePosition.x -= std::fmodf(mousePosition.x, tileSize.x);
-	mousePosition.y -= std::fmodf(mousePosition.y, tileSize.y);
+	mousePosition.x -= std::fmodf(mousePosition.x, static_cast<float>(tileSize.x));
+	mousePosition.y -= std::fmodf(mousePosition.y, static_cast<float>(tileSize.y));
 
 	cell.setPosition(mousePosition);
 
@@ -140,28 +141,39 @@ void Application::drawGUI()
 		ImGui::EndMainMenuBar();
 	}
 
+	drawTileSelection();
+}
+
+void Application::drawTileSelection()
+{
 	ImGui::Begin("Tiles");
+
 	const sf::Vector2u textureSize = (*ResourceManager<sf::Texture>::get(tilesheet_)).getSize();
 	const sf::Vector2u tileSize = map_.getTileSize();
 	sf::Vector2u tiles = sf::Vector2u(textureSize.x / tileSize.x, textureSize.y / tileSize.y);
-	if (ImGui::BeginTable("tiles", tiles.x))
+
+	if (ImGui::BeginTable("Tiles", tiles.x, 
+		ImGuiTableFlags_Borders |
+		ImGuiTableFlags_SizingFixedSame))
 	{
-		sf::Sprite sprite;
-		sprite.setTexture(*ResourceManager<sf::Texture>::get(tilesheet_));
-		for (int i = 0; i < tiles.y; ++i)
+		sf::Sprite tile;
+		tile.setTexture(*ResourceManager<sf::Texture>::get(tilesheet_));
+
+		for (unsigned int i = 0; i < tiles.y; ++i)
 		{
 			ImGui::TableNextRow();
-			for (int j = 0; j < tiles.x; ++j)
+			for (unsigned int j = 0; j < tiles.x; ++j)
 			{
 				ImGui::TableNextColumn();
-				sprite.setTextureRect(sf::IntRect(sf::Vector2i(j * tileSize.x, i * tileSize.y), sf::Vector2i(tileSize)));
+				tile.setTextureRect(sf::IntRect(sf::Vector2i(j * tileSize.x, i * tileSize.y), sf::Vector2i(tileSize)));
 
 				ImGui::PushID(i * tiles.x + j);
-				if (ImGui::ImageButton(sprite))
+				if (ImGui::ImageButton(tile, 0))
 				{
 					selectedTile_ = sf::Vector2u(j * tileSize.x, i * tileSize.y);
 				}
 				ImGui::PopID();
+				
 			}
 		}
 
@@ -170,7 +182,6 @@ void Application::drawGUI()
 
 
 	ImGui::End();
-
 }
 
 void Application::handleEvents()
@@ -239,6 +250,14 @@ void Application::buttonPressEvent(const sf::Event& event)
 	{
 		isPanning_ = true;
 		cachedMousePosition_ = pixelPosition;
+	}
+	else if (event.mouseButton.button == sf::Mouse::Button::Right)
+	{
+		sf::Vector2u tileSize = map_.getTileSize();
+
+		mousePosition.x -= std::fmodf(mousePosition.x, static_cast<float>(tileSize.x));
+		mousePosition.y -= std::fmodf(mousePosition.y, static_cast<float>(tileSize.y));
+		map_.eraseTile(mousePosition);
 	}
 }
 

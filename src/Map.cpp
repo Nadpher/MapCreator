@@ -33,8 +33,17 @@ void Map::placeTile(const std::string& texturePath, const sf::Vector2u& textureP
 
 	// i hate warnings
 	Coord index = { static_cast<int>(position.x) / static_cast<int>(tileSize_.x),
-				    static_cast<int>(position.y) / static_cast<int>(tileSize_.y) };
+					static_cast<int>(position.y) / static_cast<int>(tileSize_.y) };
+
 	tiles_[index] = Tile(texturePath, sf::IntRect(sf::Vector2i(texturePosition), sf::Vector2i(tileSize_)), position);
+}
+
+void Map::eraseTile(const sf::Vector2f& position)
+{
+	Coord index = { static_cast<int>(position.x) / static_cast<int>(tileSize_.x),
+					static_cast<int>(position.y) / static_cast<int>(tileSize_.y) };
+
+	tiles_[index] = {};
 }
 
 }
