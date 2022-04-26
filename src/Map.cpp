@@ -26,11 +26,11 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	}
 }
 
-void Map::deserialize()
+void Map::deserialize(const std::string& filePath)
 {
 	tiles_.clear();
 
-	std::ifstream in("test.json", std::ios::in);
+	std::ifstream in(filePath, std::ios::in);
 	if (in.is_open())
 	{
 		nlohmann::json json;
@@ -67,13 +67,13 @@ void Map::deserialize()
 	}
 	else
 	{
-		spdlog::error("Couldn't open json file for reading");
+		spdlog::error("Couldn't open {} file for reading", filePath);
 	}
 }
 
-void Map::serialize()
+void Map::serialize(const std::string& filePath)
 {
-	std::ofstream out("test.json", std::ios::out);
+	std::ofstream out(filePath, std::ios::out);
 	if (out.is_open())
 	{
 		nlohmann::json json;
@@ -102,7 +102,7 @@ void Map::serialize()
 	}
 	else
 	{
-		spdlog::error("Couldn't open json file for writing");
+		spdlog::error("Couldn't open {} file for writing", filePath);
 	}
 }
 

@@ -10,6 +10,7 @@ namespace nadpher
 bool Application::isPanning_ = false;
 float Application::zoomLevel_ = 1.0f;
 std::string Application::tilesheet_ = "res/tilesheet1.png";
+std::string Application::filePath_;
 sf::Vector2u Application::selectedTile_;
 sf::Vector2i Application::cachedMousePosition_;
 sf::RenderWindow Application::window_;
@@ -30,6 +31,9 @@ int Application::init(unsigned int width, unsigned int height, const std::string
 	window_.setView(view_);
 
 	map_.setTileSheet("res/tilesheet1.png");
+
+	// REMOVE LATER
+	filePath_ = "test.json";
 
 	return 0;
 }
@@ -134,13 +138,13 @@ void Application::drawGUI()
 			if (ImGui::MenuItem("Save", "F2"))
 			{
 				spdlog::debug("Saved");
-				map_.serialize();
+				map_.serialize(filePath_);
 			}
 
 			if (ImGui::MenuItem("Open", "F3"))
 			{
 				spdlog::debug("Opened");
-				map_.deserialize();
+				map_.deserialize(filePath_);
 			}
 
 			if (ImGui::MenuItem("Quit", "CTRL+Q"))

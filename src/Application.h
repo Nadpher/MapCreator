@@ -27,11 +27,14 @@ private:
 
 	static std::string tilesheet_;
 	static sf::Vector2u selectedTile_;
+	static std::string filePath_;
 	static bool isPanning_;
 	static float zoomLevel_;
 	static sf::Vector2i cachedMousePosition_;
+
 	static sf::RenderWindow window_;
 	static sf::View view_;
+
 	static Map map_;
 };
 

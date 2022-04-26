@@ -18,8 +18,8 @@ public:
 	sf::Vector2u getTileSize() const { return tileSize_; }
 	void setTileSheet(const std::string& texturePath) { tilesheet_ = texturePath; }
 
-	void serialize();
-	void deserialize();
+	void serialize(const std::string& filePath);
+	void deserialize(const std::string& filePath);
 
 	void placeTile(const sf::Vector2u& texturePosition, const sf::Vector2f& position);
 	void eraseTile(const sf::Vector2f& position);
