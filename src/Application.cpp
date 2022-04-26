@@ -129,11 +129,16 @@ void Application::drawGUI()
 	{
 		if (ImGui::BeginMenu("File"))
 		{
-			if (ImGui::MenuItem("Open", "F2"))
+			if (ImGui::MenuItem("Save", "F2"))
 			{
-				spdlog::debug("Opened new file");
+				spdlog::debug("Saved");
+				map_.serialize(tilesheet_);
 			}
 
+			if (ImGui::MenuItem("Quit", "CTRL+Q"))
+			{
+				window_.close();
+			}
 
 			ImGui::EndMenu();
 		}

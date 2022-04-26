@@ -15,6 +15,7 @@ public:
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 private:
+	friend class Map;
 	sf::Sprite sprite_;
 };
 
