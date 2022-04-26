@@ -26,14 +26,59 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	}
 }
 
-void Map::serialize(const std::string& texturePath)
+void Map::deserialize()
+{
+	tiles_.clear();
+
+	std::ifstream in("test.json", std::ios::in);
+	if (in.is_open())
+	{
+		nlohmann::json json;
+		in >> json;
+
+		tilesheet_ = json["tilesheet"];
+
+		tileSize_.x = json["tileWidth"];
+		tileSize_.y = json["tileHeight"];
+
+		if (json.contains("tiles"))
+		{
+			int tiles = json["tiles"].size();
+
+			for (int i = 0; i < tiles; ++i)
+			{
+				sf::IntRect textureRect;
+				textureRect.width = tileSize_.x;
+				textureRect.height = tileSize_.y;
+
+				textureRect.left = json["tiles"][i]["xTexturePosition"];
+				textureRect.top = json["tiles"][i]["yTexturePosition"];
+
+				sf::Vector2f position;
+				position.x = json["tiles"][i]["xPosition"];
+				position.y = json["tiles"][i]["yPosition"];
+
+				Coord index = { static_cast<int>(position.x) / static_cast<int>(tileSize_.x),
+								static_cast<int>(position.y) / static_cast<int>(tileSize_.y) };
+
+				tiles_[index] = Tile(tilesheet_, textureRect, position);
+			}
+		}
+	}
+	else
+	{
+		spdlog::error("Couldn't open json file for reading");
+	}
+}
+
+void Map::serialize()
 {
 	std::ofstream out("test.json", std::ios::out);
 	if (out.is_open())
 	{
 		nlohmann::json json;
 
-		json["tilesheet"] = texturePath;
+		json["tilesheet"] = tilesheet_;
 
 		json["tileWidth"] = tileSize_.x;
 		json["tileHeight"] = tileSize_.y;
@@ -57,13 +102,13 @@ void Map::serialize(const std::string& texturePath)
 	}
 	else
 	{
-		spdlog::error("Couldn't open json file for serialization");
+		spdlog::error("Couldn't open json file for writing");
 	}
 }
 
-void Map::placeTile(const std::string& texturePath, const sf::Vector2u& texturePosition, const sf::Vector2f& position)
+void Map::placeTile(const sf::Vector2u& texturePosition, const sf::Vector2f& position)
 {
-	if (texturePath.empty())
+	if (tilesheet_.empty())
 	{
 		spdlog::info("No tilesheet selected");
 		return;
@@ -73,7 +118,7 @@ void Map::placeTile(const std::string& texturePath, const sf::Vector2u& textureP
 	Coord index = { static_cast<int>(position.x) / static_cast<int>(tileSize_.x),
 					static_cast<int>(position.y) / static_cast<int>(tileSize_.y) };
 
-	tiles_[index] = Tile(texturePath, sf::IntRect(sf::Vector2i(texturePosition), sf::Vector2i(tileSize_)), position);
+	tiles_[index] = Tile(tilesheet_, sf::IntRect(sf::Vector2i(texturePosition), sf::Vector2i(tileSize_)), position);
 }
 
 void Map::eraseTile(const sf::Vector2f& position)

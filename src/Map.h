@@ -16,14 +16,18 @@ public:
 	Map(unsigned int tileWidth, unsigned int tileHeight);
 
 	sf::Vector2u getTileSize() const { return tileSize_; }
+	void setTileSheet(const std::string& texturePath) { tilesheet_ = texturePath; }
 
-	void serialize(const std::string& texturePath);
-	void placeTile(const std::string& texturePath, const sf::Vector2u& texturePosition, const sf::Vector2f& position);
+	void serialize();
+	void deserialize();
+
+	void placeTile(const sf::Vector2u& texturePosition, const sf::Vector2f& position);
 	void eraseTile(const sf::Vector2f& position);
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 private:
 
+	std::string tilesheet_;
 	sf::Vector2u tileSize_;
 	std::map<Coord, Tile> tiles_;
 };

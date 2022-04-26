@@ -29,6 +29,8 @@ int Application::init(unsigned int width, unsigned int height, const std::string
 	view_.reset(sf::FloatRect(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height)));
 	window_.setView(view_);
 
+	map_.setTileSheet("res/tilesheet1.png");
+
 	return 0;
 }
 
@@ -132,7 +134,13 @@ void Application::drawGUI()
 			if (ImGui::MenuItem("Save", "F2"))
 			{
 				spdlog::debug("Saved");
-				map_.serialize(tilesheet_);
+				map_.serialize();
+			}
+
+			if (ImGui::MenuItem("Open", "F3"))
+			{
+				spdlog::debug("Opened");
+				map_.deserialize();
 			}
 
 			if (ImGui::MenuItem("Quit", "CTRL+Q"))
@@ -249,7 +257,7 @@ void Application::buttonPressEvent(const sf::Event& event)
 
 		mousePosition.x -= std::fmodf(mousePosition.x, static_cast<float>(tileSize.x));
 		mousePosition.y -= std::fmodf(mousePosition.y, static_cast<float>(tileSize.y));
-		map_.placeTile(tilesheet_, selectedTile_, mousePosition);
+		map_.placeTile(selectedTile_, mousePosition);
 	}
 	else if (event.mouseButton.button == sf::Mouse::Button::Middle)
 	{
