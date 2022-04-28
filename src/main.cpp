@@ -8,7 +8,7 @@ int main()
 	spdlog::set_level(spdlog::level::info);
 #endif
 
-	if (nadpher::Application::init(1024, 768))
+	if (!nadpher::Application::init(1024, 768))
 	{
 		return 1;
 	}

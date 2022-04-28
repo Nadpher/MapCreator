@@ -26,7 +26,7 @@ int Application::init(unsigned int width, unsigned int height, const std::string
 	if (!window_.isOpen())
 	{
 		spdlog::error("Couldn't create SFML window.");
-		return 1;
+		return 0;
 	}
 
 	view_.reset(sf::FloatRect(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height)));
@@ -34,7 +34,7 @@ int Application::init(unsigned int width, unsigned int height, const std::string
 
 	map_.setTileSheet("res/tilesheet1.png");
 
-	return 0;
+	return 1;
 }
 
 void Application::run()

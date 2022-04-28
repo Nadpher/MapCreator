@@ -23,6 +23,7 @@ public:
 
 	void placeTile(const sf::Vector2u& texturePosition, const sf::Vector2f& position);
 	void eraseTile(const sf::Vector2f& position);
+
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 private:
