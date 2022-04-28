@@ -146,7 +146,7 @@ void Application::drawGUI()
 
 			if (ImGui::MenuItem("Open", "F3"))
 			{
-				map_.deserialize(filePath_);
+				open();
 			}
 
 			if (ImGui::MenuItem("Quit", "CTRL+Q"))
@@ -161,6 +161,23 @@ void Application::drawGUI()
 	}
 
 	drawTileSelection();
+}
+
+void Application::open()
+{
+	nfdchar_t* path = nullptr;
+	nfdresult_t result = NFD_OpenDialog("json", NULL, &path);
+
+	if (result == NFD_OKAY)
+	{
+		map_.deserialize(path);
+	}
+	else if (result != NFD_CANCEL)
+	{
+		spdlog::error(NFD_GetError());
+	}
+
+	std::free(path);
 }
 
 void Application::saveAs()
