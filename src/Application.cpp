@@ -4,6 +4,8 @@
 #include <imgui.h>
 #include <imgui-SFML.h>
 
+#include <nfd.h>
+
 namespace nadpher
 {
 
@@ -31,9 +33,6 @@ int Application::init(unsigned int width, unsigned int height, const std::string
 	window_.setView(view_);
 
 	map_.setTileSheet("res/tilesheet1.png");
-
-	// REMOVE LATER
-	filePath_ = "test.json";
 
 	return 0;
 }
@@ -135,15 +134,18 @@ void Application::drawGUI()
 	{
 		if (ImGui::BeginMenu("File"))
 		{
+			if (ImGui::MenuItem("Save As", "CTRL+F2"))
+			{
+				saveAs();
+			}
+
 			if (ImGui::MenuItem("Save", "F2"))
 			{
-				spdlog::debug("Saved");
-				map_.serialize(filePath_);
+				save();
 			}
 
 			if (ImGui::MenuItem("Open", "F3"))
 			{
-				spdlog::debug("Opened");
 				map_.deserialize(filePath_);
 			}
 
@@ -159,6 +161,36 @@ void Application::drawGUI()
 	}
 
 	drawTileSelection();
+}
+
+void Application::saveAs()
+{
+	nfdchar_t* path = nullptr;
+	nfdresult_t result = NFD_SaveDialog("json", NULL, &path);
+
+	if (result == NFD_OKAY)
+	{
+		filePath_ = std::string(path);
+		map_.serialize(filePath_);
+	}
+	else if (result != NFD_CANCEL)
+	{
+		spdlog::error(NFD_GetError());
+	}
+
+	std::free(path);
+}
+
+void Application::save()
+{
+	if (filePath_.empty())
+	{
+		saveAs();
+	}
+	else
+	{
+		map_.serialize(filePath_);
+	}
 }
 
 void Application::drawTileSelection()
