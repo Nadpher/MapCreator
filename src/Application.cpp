@@ -11,7 +11,6 @@ namespace nadpher
 
 bool Application::isPanning_ = false;
 float Application::zoomLevel_ = 1.0f;
-std::string Application::tilesheet_ = "res/tilesheet1.png";
 std::string Application::filePath_;
 sf::Vector2u Application::selectedTile_;
 sf::Vector2i Application::cachedMousePosition_;
@@ -103,45 +102,89 @@ void Application::drawHoveredCell()
 void Application::drawGrid()
 {
 	sf::VertexArray arr(sf::LinesStrip, 2);
-	sf::Vector2f center = view_.getCenter();
-	sf::Vector2u windowSize = window_.getSize();
-
-	sf::Vector2u tileSize = map_.getTileSize();
-
-	const float xScaledTileSize = tileSize.x / zoomLevel_;
-	const float yScaledTileSize = tileSize.y / zoomLevel_;
-
-	int xTiles = windowSize.x / xScaledTileSize;
-	int yTiles = windowSize.y / yScaledTileSize;
 
 	// grey color
-	arr[0].color = sf::Color(150, 150, 150, 255);
-	arr[1].color = sf::Color(150, 150, 150, 255);
+	arr[0].color = sf::Color(75, 75, 75, 255);
+	arr[1].color = sf::Color(75, 75, 75, 255);
+
+	// just fuck it
+	constexpr float multiplier = 1000.0f;
+	sf::Vector2u tileSize = map_.getTileSize();
+	float xMin = static_cast<float>(tileSize.x) * -multiplier;
+	float xMax = static_cast<float>(tileSize.x) * multiplier;
+
+	float yMin = static_cast<float>(tileSize.y) * -multiplier;
+	float yMax = static_cast<float>(tileSize.y) * multiplier;
 
 	// columns
-	float offset = fmodf(center.x, static_cast<float>(tileSize.x));
-	for (int i = 0; i <= xTiles; ++i)
-	{
-		arr[0].position = window_.mapPixelToCoords(sf::Vector2i(i * xScaledTileSize, 0), view_);
-		arr[0].position.x -= offset;
+	float pos = xMin; // -64000.0f
 
-		arr[1].position = window_.mapPixelToCoords(sf::Vector2i(i * xScaledTileSize, windowSize.y), view_);
-		arr[1].position.x -= offset;
+	for ( ; pos < 0.0f; pos += tileSize.x)
+	{
+		arr[0].position.x = pos;
+		arr[0].position.y = yMin;
+
+		arr[1].position.x = pos;
+		arr[1].position.y = yMax;
+		window_.draw(arr);
+	}
+
+	arr[0].position = sf::Vector2f(0.0f, yMin);
+	arr[1].position = sf::Vector2f(0.0f, yMax);
+
+	arr[0].color = sf::Color::White;
+	arr[1].color = sf::Color::White;
+	window_.draw(arr);
+
+	// grey color
+	arr[0].color = sf::Color(75, 75, 75, 255);
+	arr[1].color = sf::Color(75, 75, 75, 255);
+
+	pos = tileSize.x;
+	for ( ; pos <= xMax; pos += tileSize.x)
+	{
+		arr[0].position.x = pos;
+		arr[0].position.y = yMin;
+
+		arr[1].position.x = pos;
+		arr[1].position.y = yMax;
 		window_.draw(arr);
 	}
 
 	// rows
-	offset = fmodf(center.y, static_cast<float>(tileSize.y));
-	for (int i = 0; i <= yTiles; ++i)
+	pos = yMin;
+	for (; pos < 0.0f; pos += tileSize.y)
 	{
-		arr[0].position = window_.mapPixelToCoords(sf::Vector2i(0, i * yScaledTileSize), view_);
-		arr[0].position.y -= offset;
+		arr[0].position.x = xMin;
+		arr[0].position.y = pos;
 
-		arr[1].position = window_.mapPixelToCoords(sf::Vector2i(windowSize.x, i * yScaledTileSize), view_);
-		arr[1].position.y -= offset;
+		arr[1].position.x = xMax;
+		arr[1].position.y = pos;
 		window_.draw(arr);
 	}
 
+	arr[0].position = sf::Vector2f(xMin, 0.0f);
+	arr[1].position = sf::Vector2f(xMax, 0.0f);
+
+	arr[0].color = sf::Color::White;
+	arr[1].color = sf::Color::White;
+	window_.draw(arr);
+
+	// grey color
+	arr[0].color = sf::Color(75, 75, 75, 255);
+	arr[1].color = sf::Color(75, 75, 75, 255);
+
+	// rows
+	pos = tileSize.y;
+	for (; pos <= xMax; pos += tileSize.x)
+	{
+		arr[0].position.x = xMin;
+		arr[0].position.y = pos;
+
+		arr[1].position.x = xMax;
+		arr[1].position.y = pos;
+		window_.draw(arr);
+	}
 }
 
 void Application::drawGUI()
@@ -230,7 +273,7 @@ void Application::drawTileSelection()
 {
 	ImGui::Begin("Tiles");
 
-	const sf::Vector2u textureSize = (*ResourceManager<sf::Texture>::get(tilesheet_)).getSize();
+	const sf::Vector2u textureSize = (*ResourceManager<sf::Texture>::get(map_.getTileSheet())).getSize();
 	const sf::Vector2u tileSize = map_.getTileSize();
 	sf::Vector2u tiles = sf::Vector2u(textureSize.x / tileSize.x, textureSize.y / tileSize.y);
 
@@ -239,7 +282,7 @@ void Application::drawTileSelection()
 		ImGuiTableFlags_SizingFixedSame))
 	{
 		sf::Sprite tile;
-		tile.setTexture(*ResourceManager<sf::Texture>::get(tilesheet_));
+		tile.setTexture(*ResourceManager<sf::Texture>::get(map_.getTileSheet()));
 
 		for (unsigned int i = 0; i < tiles.y; ++i)
 		{

@@ -30,7 +30,6 @@ private:
 	static void saveAs();
 	static void open();
 
-	static std::string tilesheet_;
 	static sf::Vector2u selectedTile_;
 	static std::string filePath_;
 	static bool isPanning_;

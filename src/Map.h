@@ -15,6 +15,7 @@ public:
 	Map(const sf::Vector2u& tileSize);
 	Map(unsigned int tileWidth, unsigned int tileHeight);
 
+	std::string getTileSheet() const { return tilesheet_; }
 	sf::Vector2u getTileSize() const { return tileSize_; }
 	void setTileSheet(const std::string& texturePath) { tilesheet_ = texturePath; }
 
