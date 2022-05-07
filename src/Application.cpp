@@ -77,8 +77,25 @@ void Application::drawHoveredCell()
 
 	sf::Vector2f mousePosition = window_.mapPixelToCoords(sf::Mouse::getPosition(window_), view_);
 
-	mousePosition.x -= std::fmodf(mousePosition.x, static_cast<float>(tileSize.x));
-	mousePosition.y -= std::fmodf(mousePosition.y, static_cast<float>(tileSize.y));
+	spdlog::debug("MOUSE POSITION: x {} y {}", mousePosition.x, mousePosition.y);
+
+	if (mousePosition.x > 0.0f)
+	{
+		mousePosition.x -= std::fmodf(mousePosition.x, static_cast<float>(tileSize.x));
+	}
+	else
+	{
+		mousePosition.x -= static_cast<float>(tileSize.x) - std::fmodf(std::abs(mousePosition.x), static_cast<float>(tileSize.x));
+	}
+
+	if (mousePosition.y > 0.0f)
+	{
+		mousePosition.y -= std::fmodf(mousePosition.y, static_cast<float>(tileSize.y));
+	}
+	else
+	{
+		mousePosition.y -= static_cast<float>(tileSize.y) - std::fmodf(std::abs(mousePosition.y), static_cast<float>(tileSize.y));
+	}
 
 	cell.setPosition(mousePosition);
 
@@ -92,13 +109,14 @@ void Application::drawGrid()
 	sf::Vector2u windowSize = window_.getSize();
 
 	sf::Vector2u tileSize = map_.getTileSize();
-	const int xScaledTileSize = tileSize.x / zoomLevel_;
-	const int yScaledTileSize = tileSize.y / zoomLevel_;
+
+	const float xScaledTileSize = tileSize.x / zoomLevel_;
+	const float yScaledTileSize = tileSize.y / zoomLevel_;
 
 	int xTiles = windowSize.x / xScaledTileSize;
 	int yTiles = windowSize.y / yScaledTileSize;
 
-	// temporary grey color
+	// grey color
 	arr[0].color = sf::Color(150, 150, 150, 255);
 	arr[1].color = sf::Color(150, 150, 150, 255);
 
@@ -134,22 +152,22 @@ void Application::drawGUI()
 	{
 		if (ImGui::BeginMenu("File"))
 		{
-			if (ImGui::MenuItem("Save As", "CTRL+F2"))
+			if (ImGui::MenuItem("Save As"))
 			{
 				saveAs();
 			}
 
-			if (ImGui::MenuItem("Save", "F2"))
+			if (ImGui::MenuItem("Save"))
 			{
 				save();
 			}
 
-			if (ImGui::MenuItem("Open", "F3"))
+			if (ImGui::MenuItem("Open"))
 			{
 				open();
 			}
 
-			if (ImGui::MenuItem("Quit", "CTRL+Q"))
+			if (ImGui::MenuItem("Quit"))
 			{
 				window_.close();
 			}
@@ -308,8 +326,24 @@ void Application::buttonPressEvent(const sf::Event& event)
 	{
 		sf::Vector2u tileSize = map_.getTileSize();
 
-		mousePosition.x -= std::fmodf(mousePosition.x, static_cast<float>(tileSize.x));
-		mousePosition.y -= std::fmodf(mousePosition.y, static_cast<float>(tileSize.y));
+		if (mousePosition.x > 0.0f)
+		{
+			mousePosition.x -= std::fmodf(mousePosition.x, static_cast<float>(tileSize.x));
+		}
+		else
+		{
+			mousePosition.x -= static_cast<float>(tileSize.x) - std::fmodf(std::abs(mousePosition.x), static_cast<float>(tileSize.x));
+		}
+
+		if (mousePosition.y > 0.0f)
+		{
+			mousePosition.y -= std::fmodf(mousePosition.y, static_cast<float>(tileSize.y));
+		}
+		else
+		{
+			mousePosition.y -= static_cast<float>(tileSize.y) - std::fmodf(std::abs(mousePosition.y), static_cast<float>(tileSize.y));
+		}
+		
 		map_.placeTile(selectedTile_, mousePosition);
 	}
 	else if (event.mouseButton.button == sf::Mouse::Button::Middle)
