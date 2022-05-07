@@ -77,8 +77,6 @@ void Application::drawHoveredCell()
 
 	sf::Vector2f mousePosition = window_.mapPixelToCoords(sf::Mouse::getPosition(window_), view_);
 
-	spdlog::debug("MOUSE POSITION: x {} y {}", mousePosition.x, mousePosition.y);
-
 	if (mousePosition.x > 0.0f)
 	{
 		mousePosition.x -= std::fmodf(mousePosition.x, static_cast<float>(tileSize.x));
@@ -355,8 +353,23 @@ void Application::buttonPressEvent(const sf::Event& event)
 	{
 		sf::Vector2u tileSize = map_.getTileSize();
 
-		mousePosition.x -= std::fmodf(mousePosition.x, static_cast<float>(tileSize.x));
-		mousePosition.y -= std::fmodf(mousePosition.y, static_cast<float>(tileSize.y));
+		if (mousePosition.x > 0.0f)
+		{
+			mousePosition.x -= std::fmodf(mousePosition.x, static_cast<float>(tileSize.x));
+		}
+		else
+		{
+			mousePosition.x -= static_cast<float>(tileSize.x) - std::fmodf(std::abs(mousePosition.x), static_cast<float>(tileSize.x));
+		}
+
+		if (mousePosition.y > 0.0f)
+		{
+			mousePosition.y -= std::fmodf(mousePosition.y, static_cast<float>(tileSize.y));
+		}
+		else
+		{
+			mousePosition.y -= static_cast<float>(tileSize.y) - std::fmodf(std::abs(mousePosition.y), static_cast<float>(tileSize.y));
+		}
 		map_.eraseTile(mousePosition);
 	}
 }
